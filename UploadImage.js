@@ -1,97 +1,79 @@
-// Importa las funciones que necesitas de los SDK que necesitas
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL  } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: ,
-    authDomain: ,
-    projectId: ,
-    storageBucket: ,
-    messagingSenderId: ,
+    apiKey:,
+    authDomain:,
+    projectId:,
+    storageBucket:,
+    messagingSenderId:,
     appId:,
     measurementId:
-  };
+};
 
-// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
-const firestore = getFirestore(app); // Obtiene la instancia de Firestore
-const storage = getStorage(); 
+const storage = getStorage();
+const firestore = getFirestore();
+const imageList = document.getElementById('imageList');
 
-document.addEventListener("DOMContentLoaded", function () {
-  const camaraAlfa = document.getElementById('camara-alfa');
-  const formulario = document.getElementById('tu-formulario');
-  const listaImagenesContainer = document.getElementById('lista-imagenes');
+// Obtén una referencia a la colección "fotos" en Firestore
+const fotosCollection = collection(firestore, 'fotos');
 
-  camaraAlfa.addEventListener('click', () => {
-    if (inputNombre.value.trim() === '') {
-      alert('Por favor, complete el campo de nombre antes de cargar una foto.');
-      return;
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.getElementById('fileInput');
+    const uploadButton = document.getElementById('uploadButton');
+
+    if (uploadButton) {
+        uploadButton.addEventListener('click', subirImagen);
     }
 
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.style.display = 'none';
-
-    fileInput.addEventListener('change', async (event) => {
-      try {
-        const file = event.target.files[0];
-        const fileName = `${inputNombre.value.trim()}-${file.name}`;
-
-        const storageRef = ref(storage, `fotos/${fileName}`);
-        const imagenSnapshot = await uploadBytes(storageRef, file);
-        const imagenDownloadURL = await getDownloadURL(imagenSnapshot.ref);
-
-        console.log('URL de descarga:', imagenDownloadURL);
-        alert('Foto subida correctamente');
-
-        // Agregar la imagen a la lista
-        mostrarImagenEnLista(imagenDownloadURL);
-      } catch (error) {
-        console.error("Error al subir la imagen:", error);
-        alert('Error al subir la foto');
-      } finally {
-        formulario.removeChild(fileInput);
-      }
+    // Escucha cambios en la colección 'fotos' en tiempo real
+    onSnapshot(fotosCollection, (snapshot) => {
+        // Obtén las URL de descarga de las imágenes
+        const urls = snapshot.docs.map(doc => doc.data().url);
+        // Muestra todas las imágenes en la lista
+        mostrarImagenesEnLista(urls);
     });
-
-    formulario.appendChild(fileInput);
-    fileInput.click();
-  });
-
-  formulario.addEventListener("submit", async function (event) {
-    try {
-      event.preventDefault();
-
-      const imagenFile = document.getElementById('camara-alfa');
-
-      if (imagenFile && imagenFile.files.length > 0) {
-        const imagenFileName = `${inputNombre.value.trim()}-${imagenFile.files[0].name}`;
-        const imagenStorageRef = ref(storage, `fotos/${imagenFileName}`);
-        const imagenSnapshot = await uploadBytes(imagenStorageRef, imagenFile.files[0]);
-        const imagenDownloadURL = await getDownloadURL(imagenSnapshot.ref);
-
-        console.log("URL de descarga de la imagen:", imagenDownloadURL);
-        alert("Imagen subida correctamente");
-
-        // Agregar la imagen a la lista
-        mostrarImagenEnLista(imagenDownloadURL);
-      } else {
-        alert("Por favor, selecciona una imagen");
-      }
-    } catch (error) {
-      console.error("Error al subir la imagen:", error);
-      alert("Error al subir la imagen");
-    }
-  });
-
-  // Función para mostrar una imagen en la lista
-  function mostrarImagenEnLista(url) {
-    const imagenElement = document.createElement('img');
-    imagenElement.src = url;
-    listaImagenesContainer.appendChild(imagenElement);
-  }
 });
+
+async function subirImagen() {
+    const fileInput = document.getElementById('fileInput');
+
+    if (fileInput && fileInput.files.length > 0) {
+        try {
+            const file = fileInput.files[0];
+            const fileName = file.name;
+            const storageRef = ref(storage, `fotos/${fileName}`);
+            await uploadBytes(storageRef, file);
+
+            // Obtén la URL de descarga
+            const downloadURL = await getDownloadURL(storageRef);
+
+            // Agrega la URL a la colección 'fotos' en Firestore
+            await addDoc(fotosCollection, { url: downloadURL });
+        } catch (error) {
+            console.error('Error al subir la imagen:', error);
+            alert('Error al subir la imagen');
+        }
+    } else {
+        alert('Por favor, selecciona una imagen');
+    }
+}
+
+function mostrarImagenesEnLista(urls) {
+    const imageList = document.getElementById('imageList');
+
+    if (imageList) {
+        // Limpiar la lista antes de mostrar nuevas imágenes
+        imageList.innerHTML = '';
+
+        // Iterar sobre las URLs de las imágenes y crear elementos de imagen
+        urls.forEach((url) => {
+            const imgElement = document.createElement('img');
+            imgElement.src = url;
+            imgElement.classList.add('uploaded-image');
+            imageList.appendChild(imgElement);
+        });
+    }
+}
