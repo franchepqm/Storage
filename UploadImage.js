@@ -3,13 +3,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstati
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCokvsHAozeVWEuI4we8KotMZIX86aRvjc",
-    authDomain: "alfaservicio-integral.firebaseapp.com",
-    projectId: "alfaservicio-integral",
-    storageBucket: "alfaservicio-integral.appspot.com",
-    messagingSenderId: "602530827906",
-    appId: "1:602530827906:web:0745925154ce7dd9bdee9b",
-    measurementId: "G-YJ6K2ZL3VG"
+    apiKey:,
+    authDomain:,
+    projectId:,
+    storageBucket:,
+    messagingSenderId:,
+    appId:,
+    measurementId:
 };
 
 const app = initializeApp(firebaseConfig);
