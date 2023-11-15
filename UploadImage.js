@@ -1,7 +1,7 @@
 // Importa las funciones que necesitas de los SDK que necesitas
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL  } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-storage.js";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -22,6 +22,8 @@ const storage = getStorage();
 
 document.addEventListener("DOMContentLoaded", function () {
   const camaraAlfa = document.getElementById('camara-alfa');
+  const formulario = document.getElementById('tu-formulario');
+  const listaImagenesContainer = document.getElementById('lista-imagenes');
 
   camaraAlfa.addEventListener('click', () => {
     if (inputNombre.value.trim() === '') {
@@ -45,6 +47,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         console.log('URL de descarga:', imagenDownloadURL);
         alert('Foto subida correctamente');
+
+        // Agregar la imagen a la lista
+        mostrarImagenEnLista(imagenDownloadURL);
       } catch (error) {
         console.error("Error al subir la imagen:", error);
         alert('Error al subir la foto');
@@ -71,6 +76,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         console.log("URL de descarga de la imagen:", imagenDownloadURL);
         alert("Imagen subida correctamente");
+
+        // Agregar la imagen a la lista
+        mostrarImagenEnLista(imagenDownloadURL);
       } else {
         alert("Por favor, selecciona una imagen");
       }
@@ -79,4 +87,11 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Error al subir la imagen");
     }
   });
+
+  // Función para mostrar una imagen en la lista
+  function mostrarImagenEnLista(url) {
+    const imagenElement = document.createElement('img');
+    imagenElement.src = url;
+    listaImagenesContainer.appendChild(imagenElement);
+  }
 });
