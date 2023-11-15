@@ -3,13 +3,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstati
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey:,
-    authDomain:,
-    projectId:,
-    storageBucket:,
-    messagingSenderId:,
-    appId:,
-    measurementId:
+    apiKey: "AIzaSyCokvsHAozeVWEuI4we8KotMZIX86aRvjc",
+    authDomain: "alfaservicio-integral.firebaseapp.com",
+    projectId: "alfaservicio-integral",
+    storageBucket: "alfaservicio-integral.appspot.com",
+    messagingSenderId: "602530827906",
+    appId: "1:602530827906:web:0745925154ce7dd9bdee9b",
+    measurementId: "G-YJ6K2ZL3VG"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -22,6 +22,8 @@ const fotosCollection = collection(firestore, 'fotos');
 
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('fileInput');
+    const tituloInput = document.getElementById('tituloInput');
+    const descripcionInput = document.getElementById('descripcionInput');
     const uploadButton = document.getElementById('uploadButton');
 
     if (uploadButton) {
@@ -30,15 +32,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Escucha cambios en la colección 'fotos' en tiempo real
     onSnapshot(fotosCollection, (snapshot) => {
-        // Obtén las URL de descarga de las imágenes
-        const urls = snapshot.docs.map(doc => doc.data().url);
+        // Obtén los documentos de la colección 'fotos'
+        const fotos = snapshot.docs.map(doc => doc.data());
         // Muestra todas las imágenes en la lista
-        mostrarImagenesEnLista(urls);
+        mostrarImagenesEnLista(fotos);
     });
 });
 
 async function subirImagen() {
     const fileInput = document.getElementById('fileInput');
+    const tituloInput = document.getElementById('tituloInput');
+    const descripcionInput = document.getElementById('descripcionInput');
 
     if (fileInput && fileInput.files.length > 0) {
         try {
@@ -50,8 +54,17 @@ async function subirImagen() {
             // Obtén la URL de descarga
             const downloadURL = await getDownloadURL(storageRef);
 
-            // Agrega la URL a la colección 'fotos' en Firestore
-            await addDoc(fotosCollection, { url: downloadURL });
+            // Agrega la URL y los datos asociados a la colección 'fotos' en Firestore
+            await addDoc(fotosCollection, {
+                url: downloadURL,
+                titulo: tituloInput.value,
+                descripcion: descripcionInput.value
+            });
+
+            // Limpiar los campos después de la carga
+            fileInput.value = '';
+            tituloInput.value = '';
+            descripcionInput.value = '';
         } catch (error) {
             console.error('Error al subir la imagen:', error);
             alert('Error al subir la imagen');
@@ -61,19 +74,39 @@ async function subirImagen() {
     }
 }
 
-function mostrarImagenesEnLista(urls) {
+function mostrarImagenesEnLista(fotos) {
     const imageList = document.getElementById('imageList');
 
     if (imageList) {
         // Limpiar la lista antes de mostrar nuevas imágenes
         imageList.innerHTML = '';
 
-        // Iterar sobre las URLs de las imágenes y crear elementos de imagen
-        urls.forEach((url) => {
+        // Iterar sobre las imágenes y crear elementos de imagen, título y descripción
+        fotos.forEach((foto) => {
+            // Contenedor para cada elemento
+            const container = document.createElement('div');
+            container.classList.add('image-container');
+
+            // Imagen
             const imgElement = document.createElement('img');
-            imgElement.src = url;
+            imgElement.src = foto.url;
             imgElement.classList.add('uploaded-image');
-            imageList.appendChild(imgElement);
+            container.appendChild(imgElement);
+
+            // Título
+            const tituloElement = document.createElement('p');
+            tituloElement.textContent = `Título: ${foto.titulo}`;
+            tituloElement.classList.add('image-title');
+            container.appendChild(tituloElement);
+
+            // Descripción
+            const descripcionElement = document.createElement('p');
+            descripcionElement.textContent = `Descripción: ${foto.descripcion}`;
+            descripcionElement.classList.add('image-description');
+            container.appendChild(descripcionElement);
+
+            // Agregar el contenedor al imageList
+            imageList.appendChild(container);
         });
     }
 }
