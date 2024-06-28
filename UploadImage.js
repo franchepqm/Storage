@@ -23,7 +23,6 @@ const fotosCollection = collection(firestore, 'fotos');
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('fileInput');
     const tituloInput = document.getElementById('tituloInput');
-    const descripcionInput = document.getElementById('descripcionInput');
     const uploadButton = document.getElementById('uploadButton');
 
     if (uploadButton) {
@@ -42,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
 async function subirImagen() {
     const fileInput = document.getElementById('fileInput');
     const tituloInput = document.getElementById('tituloInput');
-    const descripcionInput = document.getElementById('descripcionInput');
 
     if (fileInput && fileInput.files.length > 0) {
         try {
@@ -58,13 +56,11 @@ async function subirImagen() {
             await addDoc(fotosCollection, {
                 url: downloadURL,
                 titulo: tituloInput.value,
-                descripcion: descripcionInput.value
             });
 
             // Limpiar los campos después de la carga
             fileInput.value = '';
             tituloInput.value = '';
-            descripcionInput.value = '';
         } catch (error) {
             console.error('Error al subir la imagen:', error);
             alert('Error al subir la imagen');
@@ -98,12 +94,6 @@ function mostrarImagenesEnLista(fotos) {
             tituloElement.textContent = `Título: ${foto.titulo}`;
             tituloElement.classList.add('image-title');
             container.appendChild(tituloElement);
-
-            // Descripción
-            const descripcionElement = document.createElement('p');
-            descripcionElement.textContent = `Descripción: ${foto.descripcion}`;
-            descripcionElement.classList.add('image-description');
-            container.appendChild(descripcionElement);
 
             // Agregar el contenedor al imageList
             imageList.appendChild(container);
